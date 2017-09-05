@@ -1,0 +1,6 @@
+c:\users\user\documents\visual studio 2015\Projects\Meetings\Meetings\bin\Debug\Meetings.exe.config
+c:\users\user\documents\visual studio 2015\Projects\Meetings\Meetings\bin\Debug\Meetings.exe
+c:\users\user\documents\visual studio 2015\Projects\Meetings\Meetings\bin\Debug\Meetings.pdb
+c:\users\user\documents\visual studio 2015\Projects\Meetings\Meetings\obj\Debug\Meetings.csprojResolveAssemblyReference.cache
+c:\users\user\documents\visual studio 2015\Projects\Meetings\Meetings\obj\Debug\Meetings.exe
+c:\users\user\documents\visual studio 2015\Projects\Meetings\Meetings\obj\Debug\Meetings.pdb
