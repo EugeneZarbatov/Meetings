@@ -82,11 +82,11 @@ namespace Meetings.Data.Repositories
         public void Add(Meeting meeting)
         {
             _connection.Open();
-            SqlCommand command = new SqlCommand($"INSERT INTO Meetings ([Begin], [End], Note) VALUES (@Begin, @End, @Note)", _connection);
-            command.Parameters.AddWithValue("@Begin", meeting.BeginDateTime);
-            command.Parameters.AddWithValue("@End", meeting.EndDateTime);
-            if (meeting.NoteDateTime != null) command.Parameters.AddWithValue("@Note", meeting.NoteDateTime);
-            else command.Parameters.AddWithValue("@Note", DBNull.Value);
+            SqlCommand command = new SqlCommand($"INSERT INTO Meetings ([BeginDateTime], [EndDateTime], NoteDateTime) VALUES (@BeginDateTime, @EndDateTime, @NoteDateTime)", _connection);
+            command.Parameters.AddWithValue("@BeginDateTime", meeting.BeginDateTime);
+            command.Parameters.AddWithValue("@EndDateTime", meeting.EndDateTime);
+            if (meeting.NoteDateTime != null) command.Parameters.AddWithValue("@NoteDateTime", meeting.NoteDateTime);
+            else command.Parameters.AddWithValue("@NoteDateTime", DBNull.Value);
             command.ExecuteNonQuery();
             _connection.Close();
         }
@@ -112,11 +112,11 @@ namespace Meetings.Data.Repositories
         public void Edit(int id, Meeting meeting)
         {
             _connection.Open();
-            SqlCommand command = new SqlCommand($"UPDATE Meetings SET [Begin] = @Begin, [End] = @End, Note = @Note WHERE Id = {id}", _connection);
-            command.Parameters.AddWithValue("@Begin", meeting.BeginDateTime);
-            command.Parameters.AddWithValue("@End", meeting.EndDateTime);
-            if (meeting.NoteDateTime != null) command.Parameters.AddWithValue("@Note", meeting.NoteDateTime);
-            else command.Parameters.AddWithValue("@Note", DBNull.Value);
+            SqlCommand command = new SqlCommand($"UPDATE Meetings SET [BeginDateTime] = @BeginDateTime, [EndDateTime] = @EndDateTime, NoteDateTime = @NoteDateTime WHERE Id = {id}", _connection);
+            command.Parameters.AddWithValue("@BeginDateTime", meeting.BeginDateTime);
+            command.Parameters.AddWithValue("@EndDateTime", meeting.EndDateTime);
+            if (meeting.NoteDateTime != null) command.Parameters.AddWithValue("@NoteDateTime", meeting.NoteDateTime);
+            else command.Parameters.AddWithValue("@NoteDateTime", DBNull.Value);
             command.ExecuteNonQuery();
             _connection.Close();
         }
