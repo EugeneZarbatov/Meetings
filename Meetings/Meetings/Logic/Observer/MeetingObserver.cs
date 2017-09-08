@@ -12,8 +12,8 @@ namespace Meetings.Logic.Observer
         /// <summary>
         /// Делегат для обработки событий: уведомление о встрече, начало/окончание встречи.
         /// </summary>
-        /// <param name="str"></param>
-        public delegate void Updater(string str);
+        /// <param name="message"></param>
+        public delegate void Updater(string message);
         /// <summary>
         /// Встреча начнется.
         /// </summary>

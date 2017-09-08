@@ -21,7 +21,7 @@ namespace Meetings.Logic.Printer
         /// <param name="path">Путь сохранения файла.</param>
         public void Print(IEnumerable<Meeting> meetings, DateTime day, string path)
         {
-            string str;
+            string info;
             bool isFound = false;
             foreach (Meeting meeting in meetings)
             {
@@ -32,29 +32,29 @@ namespace Meetings.Logic.Printer
             }
             if (isFound)
             {
-                str = "Расписание встреч на " + day.ToLongDateString();
+                info = "Расписание встреч на " + day.ToLongDateString();
                 foreach (Meeting meeting in meetings)
                 {
                     if (meeting.BeginDateTime.ToShortDateString() == day.ToShortDateString())
                     {
-                        str += "\r\n";
-                        str += "\r\nВстреча № " + meeting.Id.ToString() + " назначена на \t" + meeting.BeginDateTime.ToString();
-                        str += "\r\nВстреча закончится \t\t" + meeting.EndDateTime.ToString();
-                        if (meeting.NoteDateTime != null) str += "\r\nУведомление о встрече \t\t" + meeting.NoteDateTime.ToString();
-                        else str += "\r\nУведомления не назначено";
+                        info += "\r\n";
+                        info += "\r\nВстреча № " + meeting.Id.ToString() + " назначена на \t" + meeting.BeginDateTime.ToString();
+                        info += "\r\nВстреча закончится \t\t" + meeting.EndDateTime.ToString();
+                        if (meeting.NoteDateTime != null) info += "\r\nУведомление о встрече \t\t" + meeting.NoteDateTime.ToString();
+                        else info += "\r\nУведомления не назначено";
                     }
                 }
             }
             else
             {
-                str = day.ToLongDateString() + " не запланировано встреч";
+                info = day.ToLongDateString() + " не запланировано встреч";
             }
 
             try
             {
                 using (StreamWriter writer = new StreamWriter(path))
                 {
-                    writer.Write(str);
+                    writer.Write(info);
                 }
             }
             catch (Exception e)
