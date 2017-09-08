@@ -1,6 +1,7 @@
 ﻿using System;
 using Meetings.Data.Models;
 using Meetings.Logic.Printer;
+using System.Collections.Generic;
 
 namespace Meetings.Logic.Shedule
 {
@@ -16,6 +17,12 @@ namespace Meetings.Logic.Shedule
         /// <param name="EndDateTime">Время окончания.</param>
         /// <param name="NoteDateTime">Время уведомления.</param>
         void Add(DateTime BeginDateTime, DateTime EndDateTime, DateTime? NoteDateTime);
+
+        /// <summary>
+        /// Извлекает все встречи репозитория.
+        /// </summary>
+        /// <returns></returns>
+        IEnumerable<Meeting> FindAll();
 
         /// <summary>
         /// Выполняет поиск встречи с идентификаторм id и возвращает первое вхождение в пределах расписания.

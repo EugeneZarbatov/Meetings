@@ -3,7 +3,6 @@ using Meetings.Data.Repositories;
 using Meetings.Data.Models;
 using Meetings.Data.Factories;
 using Meetings.Logic.Printer;
-using Meetings.Logic.Updater;
 using System.Collections.Generic;
 
 namespace Meetings.Logic.Shedule
@@ -16,7 +15,7 @@ namespace Meetings.Logic.Shedule
         /// <summary>
         /// Репозиторий.
         /// </summary>
-        private IDbRepository<Meeting> _meetings = new MeetingDbRepository(@"Data source=(localdb)\MSSQLLocalDB;Initial Catalog=Meetings;Integrated Security=True;");
+        private IDbRepository<Meeting> _meetings = new MeetingDbRepository();
         /// <summary>
         /// Фабрика для встреч.
         /// </summary>
@@ -31,7 +30,7 @@ namespace Meetings.Logic.Shedule
         public void Add(DateTime BeginDateTime, DateTime EndDateTime, DateTime? NoteDateTime)
         {
             Meeting meeting = meetingFactory.Create(BeginDateTime, EndDateTime, NoteDateTime);
-            if (Validate(meeting, _meetings.FindAll()))
+            if (Validate(meeting, FindAll()))
             {
                 _meetings.Add(meeting);
             }
@@ -50,7 +49,7 @@ namespace Meetings.Logic.Shedule
         /// <param name="NoteDateTime">Время уведомления.</param>
         public void Edit(int id, DateTime BeginDateTime, DateTime EndDateTime, DateTime? NoteDateTime)
         {
-            List<Meeting> meetings = _meetings.FindAll() as List<Meeting>;
+            List<Meeting> meetings = FindAll() as List<Meeting>;
             Meeting item = meetings.Find(x => x.Id == id);
             meetings.Remove(item);
             Meeting meeting = meetingFactory.Create(BeginDateTime, EndDateTime, NoteDateTime);
@@ -111,12 +110,12 @@ namespace Meetings.Logic.Shedule
         /// Осуществляет подписку встреч на события.
         /// </summary>
         /// <param name="updater">Наблюдатель.</param>
-        public void Update(IUpdater<Meeting> updater)
+        public void Update(Observer.IObserver<Meeting> observer)
         {
-            if (_meetings.Count() != 0)
-            {
-                updater.Update(_meetings.FindAll());
-            }
+            //if (Count() != 0)
+            //{
+                observer.Update(FindAll());
+            //}
         }
 
         /// <summary>
@@ -127,7 +126,7 @@ namespace Meetings.Logic.Shedule
         /// <param name="day">Дата.</param>
         public void ConsolePrint(IConsoleSchedulePrinter<Meeting> printer, DateTime day)
         {
-            printer.Print(_meetings.FindAll(), day);
+            printer.Print(FindAll(), day);
         }
 
         /// <summary>
@@ -139,7 +138,7 @@ namespace Meetings.Logic.Shedule
         /// <param name="path">Путь сохранения файла.</param>
         public void FilePrint(IFileSchedulePrinter<Meeting> printer, DateTime day, string path)
         {
-            printer.Print(_meetings.FindAll(), day, path);
+            printer.Print(FindAll(), day, path);
         }
 
         /// <summary>
@@ -150,6 +149,15 @@ namespace Meetings.Logic.Shedule
         public Meeting Find(int id)
         {
             return _meetings.Find(id);
+        }
+
+        /// <summary>
+        /// Извлекает все встречи репозитория.
+        /// </summary>
+        /// <returns></returns>
+        public IEnumerable<Meeting> FindAll()
+        {
+            return _meetings.FindAll();
         }
 
         /// <summary>

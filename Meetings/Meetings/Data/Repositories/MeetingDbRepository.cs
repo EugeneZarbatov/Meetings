@@ -4,6 +4,7 @@ using System.Linq;
 using Meetings.Data.Models;
 using Meetings.Data.Factories;
 using System.Data.SqlClient;
+using System.Configuration;
 
 namespace Meetings.Data.Repositories
 {
@@ -15,15 +16,15 @@ namespace Meetings.Data.Repositories
         /// <summary>
         /// Подключение к базе данных SQL.
         /// </summary>
-        private SqlConnection _connection = new SqlConnection();
+        private string _connectionString;
 
         /// <summary>
         /// Конструктор.
         /// </summary>
-        /// <param name="connectionString">Строка подключения.</param>
-        public MeetingDbRepository(string connectionString)
+        public MeetingDbRepository()
         {
-            _connection.ConnectionString = connectionString;
+            ConnectionStringSettings settings = ConfigurationManager.ConnectionStrings["DbConnection"];
+            _connectionString = settings.ConnectionString;
         }
 
         /// <summary>
@@ -32,25 +33,33 @@ namespace Meetings.Data.Repositories
         /// <returns></returns>
         public IEnumerable<Meeting> FindAll()
         {
-            _connection.Open();
-            List<Meeting> meetings = new List<Meeting>();
             IMeetingFactory meetingFactory = new MeetingFactory();
-            SqlCommand command = new SqlCommand("SELECT COUNT(*) FROM Meetings", _connection);
-            object count = command.ExecuteScalar();
-            command.CommandText = "SELECT * FROM Meetings";
-            SqlDataReader reader = command.ExecuteReader();
-            if (reader.HasRows)
+            List<Meeting> meetings = new List<Meeting>();
+            try
             {
-                while (reader.Read())
+                using (SqlConnection connection = new SqlConnection(_connectionString))
                 {
-                    DateTime? note;
-                    if (reader.IsDBNull(3)) note = null;
-                    else note = reader.GetDateTime(3);
-                    meetings.Add(meetingFactory.Create(reader.GetInt32(0), reader.GetDateTime(1), reader.GetDateTime(2), note));
+                    connection.Open();
+                    SqlCommand command = new SqlCommand("SELECT * FROM Meetings", connection);
+                    SqlDataReader reader = command.ExecuteReader();
+                    if (reader.HasRows)
+                    {
+                        while (reader.Read())
+                        {
+                            DateTime? note;
+                            if (reader.IsDBNull(3)) note = null;
+                            else note = reader.GetDateTime(3);
+                            meetings.Add(meetingFactory.Create(reader.GetInt32(0), reader.GetDateTime(1), reader.GetDateTime(2), note));
+                        }
+                    }
+                    reader.Close();
+                    connection.Close();
                 }
             }
-            reader.Close();
-            _connection.Close();
+            catch (Exception e)
+            {
+                throw new Exception(e.Message);
+            }
 
             return meetings;
         }
@@ -81,14 +90,24 @@ namespace Meetings.Data.Repositories
         /// <param name="meeting">Добавляемая встреча.</param>
         public void Add(Meeting meeting)
         {
-            _connection.Open();
-            SqlCommand command = new SqlCommand($"INSERT INTO Meetings ([BeginDateTime], [EndDateTime], NoteDateTime) VALUES (@BeginDateTime, @EndDateTime, @NoteDateTime)", _connection);
-            command.Parameters.AddWithValue("@BeginDateTime", meeting.BeginDateTime);
-            command.Parameters.AddWithValue("@EndDateTime", meeting.EndDateTime);
-            if (meeting.NoteDateTime != null) command.Parameters.AddWithValue("@NoteDateTime", meeting.NoteDateTime);
-            else command.Parameters.AddWithValue("@NoteDateTime", DBNull.Value);
-            command.ExecuteNonQuery();
-            _connection.Close();
+            try
+            {
+                using (SqlConnection connection = new SqlConnection(_connectionString))
+                {
+                    connection.Open();
+                    SqlCommand command = new SqlCommand($"INSERT INTO Meetings ([BeginDateTime], [EndDateTime], NoteDateTime) VALUES (@BeginDateTime, @EndDateTime, @NoteDateTime)", connection);
+                    command.Parameters.AddWithValue("@BeginDateTime", meeting.BeginDateTime);
+                    command.Parameters.AddWithValue("@EndDateTime", meeting.EndDateTime);
+                    if (meeting.NoteDateTime != null) command.Parameters.AddWithValue("@NoteDateTime", meeting.NoteDateTime);
+                    else command.Parameters.AddWithValue("@NoteDateTime", DBNull.Value);
+                    command.ExecuteNonQuery();
+                    connection.Close();
+                }
+            }
+            catch (Exception e)
+            {
+                throw new Exception(e.Message);
+            }
         }
 
         /// <summary>
@@ -97,11 +116,21 @@ namespace Meetings.Data.Repositories
         /// <param name="id">Идентификатор удаляемой встречи.</param>
         public void Remove(int id)
         {
-            _connection.Open();
-            SqlCommand command = new SqlCommand($"DELETE FROM Meetings WHERE Id = @Id", _connection);
-            command.Parameters.AddWithValue("@Id", id);
-            command.ExecuteNonQuery();
-            _connection.Close();
+            try
+            {
+                using (SqlConnection connection = new SqlConnection(_connectionString))
+                {
+                    connection.Open();
+                    SqlCommand command = new SqlCommand($"DELETE FROM Meetings WHERE Id = @Id", connection);
+                    command.Parameters.AddWithValue("@Id", id);
+                    command.ExecuteNonQuery();
+                    connection.Close();
+                }
+            }
+            catch (Exception e)
+            {
+                throw new Exception(e.Message);
+            }
         }
 
         /// <summary>
@@ -111,14 +140,24 @@ namespace Meetings.Data.Repositories
         /// <param name="meeting">Встреча, заменяющая старую встречу репозитория.</param>
         public void Edit(int id, Meeting meeting)
         {
-            _connection.Open();
-            SqlCommand command = new SqlCommand($"UPDATE Meetings SET [BeginDateTime] = @BeginDateTime, [EndDateTime] = @EndDateTime, NoteDateTime = @NoteDateTime WHERE Id = {id}", _connection);
-            command.Parameters.AddWithValue("@BeginDateTime", meeting.BeginDateTime);
-            command.Parameters.AddWithValue("@EndDateTime", meeting.EndDateTime);
-            if (meeting.NoteDateTime != null) command.Parameters.AddWithValue("@NoteDateTime", meeting.NoteDateTime);
-            else command.Parameters.AddWithValue("@NoteDateTime", DBNull.Value);
-            command.ExecuteNonQuery();
-            _connection.Close();
+            try
+            {
+                using (SqlConnection connection = new SqlConnection(_connectionString))
+                {
+                    connection.Open();
+                    SqlCommand command = new SqlCommand($"UPDATE Meetings SET [BeginDateTime] = @BeginDateTime, [EndDateTime] = @EndDateTime, NoteDateTime = @NoteDateTime WHERE Id = {id}", connection);
+                    command.Parameters.AddWithValue("@BeginDateTime", meeting.BeginDateTime);
+                    command.Parameters.AddWithValue("@EndDateTime", meeting.EndDateTime);
+                    if (meeting.NoteDateTime != null) command.Parameters.AddWithValue("@NoteDateTime", meeting.NoteDateTime);
+                    else command.Parameters.AddWithValue("@NoteDateTime", DBNull.Value);
+                    command.ExecuteNonQuery();
+                    connection.Close();
+                }
+            }
+            catch (Exception e)
+            {
+                throw new Exception(e.Message);
+            }
         }
 
         /// <summary>
@@ -127,8 +166,23 @@ namespace Meetings.Data.Repositories
         /// <returns></returns>
         public int Count()
         {
-            IEnumerable<Meeting> meetings = FindAll();
-            return meetings.Count();
+            object count = 0;
+            try
+            {
+                using (SqlConnection connection = new SqlConnection(_connectionString))
+                {
+                    connection.Open();
+                    SqlCommand command = new SqlCommand("SELECT COUNT(*) FROM Meetings", connection);
+                    count = command.ExecuteScalar();
+                    connection.Close();
+                }
+            }
+            catch (Exception e)
+            {
+                throw new Exception(e.Message);
+            }
+
+            return (int)count;
         }
     }
 }

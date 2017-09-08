@@ -3,7 +3,7 @@ using System.Threading;
 using Meetings.Data.Models;
 using Meetings.Logic.Printer;
 using Meetings.Logic.Shedule;
-using Meetings.Logic.Updater;
+using Meetings.Logic.Observer;
 using System.IO;
 
 namespace Meetings.View
@@ -24,7 +24,7 @@ namespace Meetings.View
         /// <summary>
         /// Наблюдатель встреч. В качестве делегата на обработку событий передается консольный вывод.
         /// </summary>
-        private IUpdater<Meeting> _updater = new MeetingUpdater(message => Console.WriteLine(message));
+        private Logic.Observer.IObserver<Meeting> _observer = new MeetingObserver(message => Console.WriteLine(message));
         /// <summary>
         /// Принтер для вывода расписания в консоль.
         /// </summary>
@@ -51,12 +51,27 @@ namespace Meetings.View
             return _instance;
         }
         /// <summary>
+        /// Наблюдает расписание с периодом 1 секунда.
+        /// </summary>
+        /// <param name="obj">Расписание.</param>
+        private void Update(object obj)
+        {
+            try
+            {
+                (obj as Schedule).Update(_observer);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine($"{e.TargetSite}: {e.Message}");
+            }
+        }
+        /// <summary>
         /// Инициализирует меню консоли.
         /// </summary>
         public void Init()
         {
             Console.Title = "Meetings";
-            Timer timer = new Timer(obj => (obj as Schedule).Update(_updater), _schedule, 0, 1000);
+            Timer timer = new Timer(Update, _schedule, 0, 1000);
             int key = 0;
             bool isAlive = true;
             while (isAlive)
@@ -135,24 +150,24 @@ namespace Meetings.View
         /// </summary>
         private void Remove()
         {
-            if (_schedule.Count() == 0) Console.WriteLine("Расписание пусто!");
-            else
+            try
             {
-                Console.WriteLine("Введите номер встречи");
-                try
+                if (_schedule.Count() == 0) Console.WriteLine("Расписание пусто!");
+                else
                 {
+                    Console.WriteLine("Введите номер встречи");
                     int id = int.Parse(Console.ReadLine());
                     _schedule.Remove(id);
                     Console.WriteLine($"Встреча № {id} удалена!");
                 }
-                catch (FormatException)
-                {
-                    Console.WriteLine("Введены некорректные данные!");
-                }
-                catch (Exception e)
-                {
-                    Console.WriteLine(e.Message);
-                }
+            }
+            catch (FormatException)
+            {
+                Console.WriteLine("Введены некорректные данные!");
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
             }
         }
         /// <summary>
@@ -160,10 +175,10 @@ namespace Meetings.View
         /// </summary>
         private void AddNotification()
         {
-            if (_schedule.Count() == 0) Console.WriteLine("Расписание пусто!");
-            else
+            try
             {
-                try
+                if (_schedule.Count() == 0) Console.WriteLine("Расписание пусто!");
+                else
                 {
                     Console.WriteLine("Введите данные о встрече");
                     Console.Write("Номер встречи: ");
@@ -178,14 +193,14 @@ namespace Meetings.View
                         Console.WriteLine($"Встрече № {id} добавлено уведомление!");
                     }
                 }
-                catch (FormatException)
-                {
-                    Console.WriteLine("Введены некорректные данные!");
-                }
-                catch (Exception e)
-                {
-                    Console.WriteLine(e.Message);
-                }
+            }
+            catch (FormatException)
+            {
+                Console.WriteLine("Введены некорректные данные!");
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
             }
         }
         /// <summary>
@@ -193,10 +208,10 @@ namespace Meetings.View
         /// </summary>
         private void Edit()
         {
-            if (_schedule.Count() == 0) Console.WriteLine("Расписание пусто!");
-            else
+            try
             {
-                try
+                if (_schedule.Count() == 0) Console.WriteLine("Расписание пусто!");
+                else
                 {
                     Console.WriteLine("Введите номер встречи");
                     int id = int.Parse(Console.ReadLine());
@@ -220,14 +235,14 @@ namespace Meetings.View
                         Console.WriteLine($"Встреча № {id} изменена!");
                     }
                 }
-                catch (FormatException)
-                {
-                    Console.WriteLine("Введены некорректные данные!");
-                }
-                catch (Exception e)
-                {
-                    Console.WriteLine(e.Message);
-                }
+            }
+            catch (FormatException)
+            {
+                Console.WriteLine("Введены некорректные данные!");
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
             }
         }
         /// <summary>
@@ -236,16 +251,23 @@ namespace Meetings.View
         /// <param name="printer">Консольный принтер</param>
         private void ConsolePrint(IConsoleSchedulePrinter<Meeting> printer)
         {
-            if (_schedule.Count() == 0) Console.WriteLine("Расписание пусто!");
-            else
+            try
             {
-                Console.WriteLine("Введите дату");
-                DateTime day;
-                if (DateTime.TryParse(Console.ReadLine(), out day))
+                if (_schedule.Count() == 0) Console.WriteLine("Расписание пусто!");
+                else
                 {
+                    Console.WriteLine("Введите дату");
+                    DateTime day = DateTime.Parse(Console.ReadLine());
                     _schedule.ConsolePrint(printer, day);
                 }
-                else Console.WriteLine("Введены некорректные данные данные");
+            }
+            catch (FormatException)
+            {
+                Console.WriteLine("Введены некорректные данные!");
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
             }
         }
         /// <summary>
@@ -254,10 +276,10 @@ namespace Meetings.View
         /// <param name="printer">Файловый принтер.</param>
         private void FilePrint(IFileSchedulePrinter<Meeting> printer)
         {
-            if (_schedule.Count() == 0) Console.WriteLine("Расписание пусто!");
-            else
+            try
             {
-                try
+                if (_schedule.Count() == 0) Console.WriteLine("Расписание пусто!");
+                else
                 {
                     string path;
                     Console.WriteLine("Введите дату");
@@ -285,14 +307,14 @@ namespace Meetings.View
                         default: Console.WriteLine("Введены некорректные данные!"); break;
                     }
                 }
-                catch (FormatException)
-                {
-                    Console.WriteLine("Введены некорректные данные!");
-                }
-                catch (Exception e)
-                {
-                    Console.WriteLine(e.Message);
-                }
+            }
+            catch (FormatException)
+            {
+                Console.WriteLine("Введены некорректные данные!");
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
             }
         }
     }
